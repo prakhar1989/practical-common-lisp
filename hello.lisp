@@ -5,4 +5,6 @@
   (- a b))
 
 (defun square (x)
-  (* x x x))
+  (* x x))
+
+(say-msg "Hello, world")

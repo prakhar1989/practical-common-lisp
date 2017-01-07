@@ -39,10 +39,13 @@
 		       :if-exists :supersede)
     (with-standard-io-syntax (print *db* out))))
 
-(defun load-db (filename)
+(defun clear-db () (setf *db* nil))
+
+(defun read-file (filename)
   (with-open-file (in filename)
-    (with-standard-io-syntax
-      (setf *db* (read in)))))
+    (with-standard-io-syntax (read in))))
 
-
-
+(defun load-db (filename)
+  (if (or (not *db*)
+	  (y-or-n-p "Override data in memory?"))
+      (setf *db* (read-file filename))))
