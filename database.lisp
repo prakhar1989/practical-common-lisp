@@ -49,3 +49,39 @@
   (if (or (not *db*)
 	  (y-or-n-p "Override data in memory?"))
       (setf *db* (read-file filename))))
+
+(defun select-by-prop (prop query)
+  (remove-if-not
+   #'(lambda (cd)
+       (equal (getf cd prop) query))
+   *db*))
+
+;; (select (where :rating 4))
+(defun where (&key title artist rating
+		(ripped nil ripped-p))
+  #'(lambda (cd)
+      (and
+       (if title (equal (getf cd :title) title) t)
+       (if artist (equal (getf cd :artist) artist) t)
+       (if rating (equal (getf cd :rating) rating) t)
+       (if ripped-p (equal (getf cd :ripped) ripped) t))))
+
+(defun select (selector-fn)
+  (remove-if-not selector-fn *db*))
+
+;; (update (where :rating 4) :rating 11)
+(defun update (selector-fn &key title artist rating
+			     (ripped nil ripped-p))
+  (setf *db*
+	(mapcar #'(lambda (row)
+		    (when (funcall selector-fn row)
+		      (if title (setf (getf row :title) title))
+		      (if artist   (setf (getf row :artist) artist))
+		      (if rating   (setf (getf row :rating) rating))
+		      (if ripped-p (setf (getf row :ripped) ripped)))
+		    row)
+		*db*)))
+
+;; (delete-rows (where :rating 5))
+(defun delete-rows (selector-fn)
+  (setf *db* (remove-if selector-fn *db*)))
