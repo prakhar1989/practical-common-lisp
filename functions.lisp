@@ -47,4 +47,19 @@
   "aliases for the caller: (foo-alias :apple 10)"
   (list a b c c-supplied-p))
 
+(defun greater-than (n)
+  (dotimes (i 10)
+    (dotimes (j 10)
+      (when (> (* i j) n)
+	(return-from greater-than (list i j))))))
 
+(defun plot (fn min max step)
+  (loop for i from min to max by step do
+       (loop repeat (funcall fn i) do
+	    (format t "*"))
+       (format t "~%")))
+
+(defun apply-adder (&rest nums)
+  (apply #'+ nums))
+
+(plot (lambda (x) (* x x)) 0 5 1/2)
