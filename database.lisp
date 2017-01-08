@@ -50,14 +50,9 @@
 	  (y-or-n-p "Override data in memory?"))
       (setf *db* (read-file filename))))
 
-(defun select-by-prop (prop query)
-  (remove-if-not
-   #'(lambda (cd)
-       (equal (getf cd prop) query))
-   *db*))
-
 ;; (select (where :rating 4))
-(defun where (&key title artist rating
+;; doesn't use macros
+(defun old-where (&key title artist rating
 		(ripped nil ripped-p))
   #'(lambda (cd)
       (and
@@ -65,6 +60,18 @@
        (if artist (equal (getf cd :artist) artist) t)
        (if rating (equal (getf cd :rating) rating) t)
        (if ripped-p (equal (getf cd :ripped) ripped) t))))
+
+;; creating a new version of where
+;; which is a macro(
+(defun make-comparison-expr (field value)
+  `(equal (getf cd ,field) ,value))
+
+(defun make-comparison-list (fields)
+  (loop while fields
+     collecting (make-comparison-expr (pop fields) (pop fields))))
+
+(defmacro where (&rest clauses)
+  `#'(lambda (cd) (and ,@(make-comparison-list clauses))))
 
 (defun select (selector-fn)
   (remove-if-not selector-fn *db*))
@@ -76,8 +83,8 @@
 	(mapcar #'(lambda (row)
 		    (when (funcall selector-fn row)
 		      (if title (setf (getf row :title) title))
-		      (if artist   (setf (getf row :artist) artist))
-		      (if rating   (setf (getf row :rating) rating))
+		      (if artist  (setf (getf row :artist) artist))
+		      (if rating  (setf (getf row :rating) rating))
 		      (if ripped-p (setf (getf row :ripped) ripped)))
 		    row)
 		*db*)))
