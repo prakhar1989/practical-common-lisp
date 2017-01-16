@@ -71,3 +71,65 @@
    and a = 0 then b
    and b = 1 then (+ b a)
    finally (return a))
+
+;; building a do-prime macro
+(defun primep (number)
+  (when (> number 1)
+    (loop for x from 2 to (isqrt number)
+       never (zerop (mod number x)))))
+
+(defun next-prime (number)
+  (loop for n from number
+     when (primep n)
+     return n))
+
+;; goal - the code below doesn't work yet
+(do-primes (p 0 19)
+  (format t "~d " p))
+
+;; accomplishing the same using a do construct
+;; serves as a guiding tool for macroexpand
+(do ((p (next-prime 0) (next-prime (1+ p))))
+    ((> p 19))
+  (format t "~d " p))
+
+;; time to define the macro
+(defmacro do-primes ((var start end) &body body)
+  `(do ((,var (next-prime ,start) (next-prime (1+ ,var))))
+       ((> ,var ,end))
+     ,@body))
+
+;; now this works
+(do-primes (p 0 19)
+  (format t "~d " p))
+
+;; and its associated macroexpansion
+(macroexpand '(do-primes (p 0 19) (format t "~d " p)))
+
+;; fixing the first leak - multiple evalutions
+;; of end
+(defmacro do-primes ((var start end) &body body)
+  `(do ((,var (next-prime ,start) (next-prime (1+ ,var)))
+	(ending-value ,end))
+       ((> ,var ending-value))
+     ,@body))
+
+;; fixing the second leak - clashing symbols
+(defmacro do-primes ((var start end) &body body)
+  (let ((ending-value-name (gensym)))
+    `(do ((,var (next-prime ,start) (next-prime (1+ ,var)))
+	  (,ending-value-name ,end))
+	 ((> ,var ,ending-value-name))
+       ,@body)))
+
+;; a macro for macros
+(defmacro with-gensyms ((&rest names) &body body)
+  `(let ,(loop for n in names collect `(,n (gensym)))
+     ,@body))
+
+(defmacro do-primes ((var start end) &body body)
+  (with-gensyms (ending-value-name)
+    `(do ((,var (next-prime ,start) (next-prime (1+ ,var)))
+	  (,ending-value-name ,end))
+	 ((> ,var ,ending-value-name))
+       ,@body)))
