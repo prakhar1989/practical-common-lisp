@@ -26,7 +26,7 @@
 
 (defun adder (&rest numbers)
   (reduce #'+ numbers))
-			   
+
 ;; keyword arguments are not positional.
 ;; they also support default and *-supplied-p
 ;; type of arguments
@@ -41,9 +41,7 @@
   (list a b b-supplied-p c))
 
 (defun foo-alias (&key
-		    ((:apple a))
-		    ((:box b) 0)
-		    ((:charlie c) 0 c-supplied-p))
+		    ((:apple a)) ((:box b) 0) ((:charlie c) 0 c-supplied-p))
   "aliases for the caller: (foo-alias :apple 10)"
   (list a b c c-supplied-p))
 
