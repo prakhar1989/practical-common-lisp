@@ -59,3 +59,22 @@
 	  '(7 8 9 10 10))
 
 (reduce #'+ #(1 2 3 4 5 6))
+
+;; hash tables
+(defparameter *h* (make-hash-table))
+(gethash :name *h*); nil
+(setf (gethash :name *h*) "prakhar")
+(gethash :name *h*)
+(setf (gethash :middle-name *h*) nil)
+(setf (gethash :sex *h*) "male")
+(setf (gethash :job *h*) "programmer")
+
+(defun show-value (key hash-table)
+  (multiple-value-bind (value present) (gethash key hash-table)
+    (if present
+	(format nil "value ~a actually present." value)
+	(format nil "value ~a because key not found." value))))
+  
+(show-value :age *h*)
+(show-value :name *h*)
+(show-value :middle-name *h*)
