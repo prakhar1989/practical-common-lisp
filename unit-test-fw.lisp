@@ -17,25 +17,12 @@
 
 (defmacro deftest (name parameters &body body)
   `(defun ,name ,parameters
-     (let ((*test-name* ',name))
+     (let ((*test-name* (append *test-name* (list ',name))))
        ,@body)))
 
 ;; test cases
-(deftest test-* ()
-  (check
-    (= (* 1 2) 2)
-    (= (* 1 2 3) 6)
-    (= (* -1 -3) 3)))
+(deftest test-* () (check (= (* 1 2) 2) (= (* 1 2 3) 6) (= (* -1 -3) 3)))
 
-(deftest test-+ ()
-  (check
-    (= (+ 1 3 4) 8)
-    (= (+ 2 4) 6)
-    (= (+ 3 5) 8)))
+(deftest test-+ () (check (= (+ 1 3 4) 8) (= (+ 2 4) 6) (= (+ 3 5) 8)))
 
-(deftest test-arithmetic ()
-  (combine-results
-    (test-+)
-    (test-*)))
-
-(test-arithmetic)
+(deftest test-arithmetic () (combine-results (test-+) (test-*)))
